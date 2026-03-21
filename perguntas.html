@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Modo Perguntas</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+display:flex;
+height:100vh;
+overflow:hidden;
+}
+
+#app{
+display:grid;
+grid-template-columns: 340px 1fr;
+width:100%;
+}
+
+#config{
+padding:15px;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.box{
+background:#111;
+padding:10px;
+border-radius:8px;
+}
+
+.opcoes{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+}
+
+label{
+background:#1f1f1f;
+padding:6px;
+border-radius:6px;
+cursor:pointer;
+font-size:12px;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+background:#ff2a2a;
+color:white;
+font-weight:bold;
+cursor:pointer;
+margin-top:5px;
+}
+
+#quiz{
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+}
+
+#pergunta{
+font-size:20px;
+margin-bottom:10px;
+max-width:600px;
+}
+
+#explicacao{
+margin-top:10px;
+font-size:14px;
+max-width:600px;
+color:#ccc;
+}
+
+.alternativa{
+background:#1f1f1f;
+padding:10px;
+margin:5px;
+border-radius:6px;
+cursor:pointer;
+width:300px;
+}
+
+.correta{background:green !important}
+.errada{background:red !important}
+.marcada{outline:2px solid yellow}
+
+#acoes{
+margin-top:10px;
+}
+
+#barra{
+width:100%;
+height:18px;
+background:#333;
+border-radius:10px;
+overflow:hidden;
+display:flex;
+margin-top:10px;
+}
+
+#verde{background:green;width:0%}
+#vermelho{background:red;width:0%}
+
+#porcentagem{
+text-align:center;
+margin-top:5px;
+font-size:12px;
+}
+
+#historico{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+margin-top:10px;
+}
+
+.bola{
+width:20px;
+height:20px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:11px;
+cursor:pointer;
+}
+
+.bola.acerto{background:green}
+.bola.erro{background:red}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+<div id="config">
+
+<!-- DIFICULDADE -->
+<div class="box" id="box_dificuldade">
+<b>Dificuldade</b>
+<div class="opcoes">
+<label><input type="checkbox" value="facil"> Fácil</label>
+<label><input type="checkbox" value="medio"> Médio</label>
+<label><input type="checkbox" value="dificil"> Difícil</label>
+<label><input type="checkbox" value="extremo"> Extremo</label>
+</div>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="box" id="box_conteudo">
+<b>Conteúdo</b>
+<div class="opcoes">
+<label><input type="checkbox" value="anatomia"> Anatomia</label>
+<label><input type="checkbox" value="bioquimica"> Bioquímica</label>
+<label><input type="checkbox" value="biofisica"> Biofísica</label>
+<label><input type="checkbox" value="biologia_celular"> Biologia Celular</label>
+<label><input type="checkbox" value="histologia"> Histologia</label>
+</div>
+</div>
+
+<!-- TIPO -->
+<div class="box" id="box_tipo">
+<b>Tipo</b>
+<div class="opcoes">
+<label><input type="checkbox" value="clinico"> Clínico</label>
+<label><input type="checkbox" value="prova"> Prova</label>
+<label><input type="checkbox" value="aprendizado"> Aprendizado</label>
+</div>
+</div>
+
+<button id="btnIniciar">▶ Iniciar</button>
+
+<div class="box">
+<b>Desempenho</b>
+
+<div id="barra">
+<div id="verde"></div>
+<div id="vermelho"></div>
+</div>
+
+<div id="porcentagem">0%</div>
+<div id="historico"></div>
+
+</div>
+
+</div>
+
+<div id="quiz">
+<div id="pergunta">Clique em iniciar</div>
+<div id="alternativas"></div>
+<div id="acoes"></div>
+<div id="explicacao"></div>
+</div>
+
+</div>
+
+<script>
+
+function embaralhar(arr){
+for(let i=arr.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1))
+const temp=arr[i]
+arr[i]=arr[j]
+arr[j]=temp
+}
+}
+
+// QUESTÕES
+const questoes=[
+{
+pergunta:"Qual osso forma a testa?",
+opcoes:["Parietal","Frontal","Occipital","Temporal"],
+correta:1,
+dif:"facil",
+cont:"anatomia",
+tipo:"aprendizado",
+explicacao:"O osso frontal forma a testa e protege o cérebro anteriormente."
+},
+{
+pergunta:"O forame magno está em qual osso?",
+opcoes:["Temporal","Occipital","Frontal","Parietal"],
+correta:1,
+dif:"medio",
+cont:"anatomia",
+tipo:"prova",
+explicacao:"O forame magno está no osso occipital, permitindo passagem da medula."
+},
+{
+pergunta:"Qual proteína transporta oxigênio?",
+opcoes:["Insulina","Hemoglobina","Colágeno","Actina"],
+correta:1,
+dif:"medio",
+cont:"bioquimica",
+tipo:"aprendizado",
+explicacao:"A hemoglobina transporta oxigênio no sangue pelas hemácias."
+},
+
+{
+pergunta:"Qual osso forma a testa?",
+opcoes:["Parietal","Frontal","Occipital","Temporal"],
+correta:1,
+dif:"facil",
+cont:"anatomia",
+tipo:"aprendizado",
+explicacao:"O osso frontal forma a testa e participa da formação das órbitas."
+},
+
+{
+pergunta:"Durante um trauma craniano, um paciente apresenta lesão na região da sela túrcica. Qual estrutura pode ser diretamente afetada e qual sua função principal?",
+opcoes:[
+"Hipófise – secreção hormonal",
+"Tálamo – processamento sensorial",
+"Hipotálamo – controle da temperatura",
+"Cerebelo – coordenação motora"
+],
+correta:0,
+dif:"dificil",
+cont:"anatomia",
+tipo:"prova",
+explicacao:"A sela túrcica, localizada no esfenoide, abriga a hipófise, responsável pela regulação hormonal."
+},
+
+{
+pergunta:"Um paciente sofre traumatismo na base do crânio e apresenta dificuldade hormonal generalizada. Qual estrutura provavelmente foi afetada?",
+opcoes:[
+"Hipófise",
+"Pineal",
+"Tálamo",
+"Hipocampo"
+],
+correta:0,
+dif:"medio",
+cont:"anatomia",
+tipo:"clinico",
+explicacao:"A hipófise está localizada na sela túrcica e controla diversas funções hormonais do corpo."
+},
+
+// BIOLOGIA CELULAR
+
+{
+pergunta:"Qual organela produz ATP?",
+opcoes:["Ribossomo","Mitocôndria","Lisossomo","Golgi"],
+correta:1,
+dif:"facil",
+cont:"biologia_celular",
+tipo:"aprendizado",
+explicacao:"A mitocôndria realiza respiração celular e produz ATP."
+},
+
+{
+pergunta:"Uma célula com alta demanda energética apresenta grande quantidade de mitocôndrias. Qual processo está mais ativo nessa célula?",
+opcoes:[
+"Síntese proteica",
+"Respiração celular",
+"Digestão intracelular",
+"Transcrição genética"
+],
+correta:1,
+dif:"medio",
+cont:"biologia_celular",
+tipo:"prova",
+explicacao:"A presença de muitas mitocôndrias indica intensa respiração celular e produção de ATP."
+},
+
+{
+pergunta:"Um paciente apresenta doença mitocondrial hereditária. Qual função celular será mais prejudicada?",
+opcoes:[
+"Produção de energia",
+"Síntese de lipídios",
+"Digestão celular",
+"Armazenamento de DNA"
+],
+correta:0,
+dif:"medio",
+cont:"biologia_celular",
+tipo:"clinico",
+explicacao:"As mitocôndrias são responsáveis pela produção de ATP, essencial para energia celular."
+},
+
+// HISTOLOGIA
+
+{
+pergunta:"Qual tipo de epitélio reveste os vasos sanguíneos?",
+opcoes:["Estratificado","Pseudoestratificado","Simples pavimentoso","Cúbico"],
+correta:2,
+dif:"facil",
+cont:"histologia",
+tipo:"aprendizado",
+explicacao:"O endotélio é formado por epitélio simples pavimentoso."
+},
+
+{
+pergunta:"O epitélio pseudoestratificado ciliado tem como principal função:",
+opcoes:[
+"Absorção de nutrientes",
+"Proteção mecânica",
+"Movimentação de partículas",
+"Produção de hormônios"
+],
+correta:2,
+dif:"medio",
+cont:"histologia",
+tipo:"prova",
+explicacao:"Os cílios ajudam a remover partículas, principalmente nas vias respiratórias."
+},
+
+{
+pergunta:"Um paciente fumante crônico apresenta perda dos cílios na traqueia. Qual consequência é mais provável?",
+opcoes:[
+"Aumento da limpeza das vias aéreas",
+"Acúmulo de secreções e partículas",
+"Maior absorção de oxigênio",
+"Diminuição da produção de muco"
+],
+correta:1,
+dif:"medio",
+cont:"histologia",
+tipo:"clinico",
+explicacao:"A perda dos cílios prejudica a remoção de partículas, aumentando risco de infecção."
+},
+
+// BIOQUÍMICA
+
+{
+pergunta:"Qual molécula é a principal fonte de energia imediata da célula?",
+opcoes:["DNA","ATP","Glicogênio","RNA"],
+correta:1,
+dif:"facil",
+cont:"bioquimica",
+tipo:"aprendizado",
+explicacao:"O ATP fornece energia para processos celulares."
+},
+
+{
+pergunta:"Durante exercício intenso, o corpo utiliza ATP rapidamente. Qual processo é ativado para regenerá-lo?",
+opcoes:[
+"Glicólise",
+"Tradução",
+"Replicação",
+"Transcrição"
+],
+correta:0,
+dif:"medio",
+cont:"bioquimica",
+tipo:"prova",
+explicacao:"A glicólise quebra glicose para produzir ATP rapidamente."
+},
+
+{
+pergunta:"Um paciente apresenta fadiga extrema devido à deficiência na produção de ATP. Qual sistema está mais comprometido?",
+opcoes:[
+"Metabolismo energético",
+"Sistema imune",
+"Sistema digestório",
+"Sistema nervoso"
+],
+correta:0,
+dif:"medio",
+cont:"bioquimica",
+tipo:"clinico",
+explicacao:"A baixa produção de ATP afeta diretamente o metabolismo energético."
+},
+
+// BIOFÍSICA
+
+{
+pergunta:"A osmose envolve o movimento de:",
+opcoes:["Soluto","Íons","Água","Proteínas"],
+correta:2,
+dif:"facil",
+cont:"biofisica",
+tipo:"aprendizado",
+explicacao:"A osmose é o movimento de água através da membrana."
+},
+
+{
+pergunta:"Em uma solução hipertônica, a célula tende a:",
+opcoes:[
+"Inchar",
+"Permanecer igual",
+"Perder água",
+"Ganhar íons"
+],
+correta:2,
+dif:"medio",
+cont:"biofisica",
+tipo:"prova",
+explicacao:"Em solução hipertônica, a água sai da célula, causando retração."
+},
+
+{
+pergunta:"Um paciente recebe solução hipertônica intravenosa. O que ocorre com suas células?",
+opcoes:[
+"Incham",
+"Se rompem",
+"Perdem água",
+"Não sofrem alteração"
+],
+correta:2,
+dif:"medio",
+cont:"biofisica",
+tipo:"clinico",
+explicacao:"Soluções hipertônicas fazem a água sair das células por osmose."
+}
+]
+
+let fila=[]
+let atual=0
+let historico=[]
+let respostas=[]
+
+function pegar(sel){
+let v=[...document.querySelectorAll(sel+":checked")].map(e=>e.value)
+return v.length?v:null
+}
+
+// FILTRO COMPLETO
+function iniciar(){
+
+let dif=pegar("#box_dificuldade input")
+let cont=pegar("#box_conteudo input")
+let tipo=pegar("#box_tipo input")
+
+function norm(v){return v.toLowerCase().trim()}
+
+let nenhum=!dif&&!cont&&!tipo
+
+fila=questoes.filter(q=>{
+return (!dif||dif.map(norm).includes(norm(q.dif))) &&
+(!cont||cont.map(norm).includes(norm(q.cont))) &&
+(!tipo||tipo.map(norm).includes(norm(q.tipo)))
+})
+
+if(fila.length===0){
+if(nenhum) fila=[...questoes]
+else{
+document.getElementById("pergunta").innerText="Nenhuma questão encontrada"
+document.getElementById("alternativas").innerHTML=""
+return
+}
+}
+
+fila.forEach(q=>delete q.embaralhadas)
+
+embaralhar(fila)
+
+atual=0
+historico=[]
+respostas=[]
+
+mostrar()
+}
+
+// RESTO IGUAL (mantido corretamente)
+
+function mostrar(){
+
+let q=fila[atual]
+
+if(!q){
+document.getElementById("pergunta").innerText="Fim!"
+document.getElementById("alternativas").innerHTML=""
+return
+}
+
+document.getElementById("explicacao").innerText=""
+document.getElementById("acoes").innerHTML=""
+
+document.getElementById("pergunta").innerText=q.pergunta
+
+if(!q.embaralhadas){
+let opcoes=q.opcoes.map((t,i)=>({texto:t,correta:i===q.correta}))
+embaralhar(opcoes)
+q.embaralhadas=opcoes
+}
+
+let altDiv=document.getElementById("alternativas")
+altDiv.innerHTML=""
+
+q.embaralhadas.forEach((op,i)=>{
+let div=document.createElement("div")
+div.className="alternativa"
+div.innerText=op.texto
+div.onclick=()=>responder(i)
+altDiv.appendChild(div)
+})
+
+if(respostas[atual]!==undefined){
+mostrarRevisao()
+mostrarAcoes()
+}
+}
+
+function responder(i){
+
+respostas[atual]=i
+
+let q=fila[atual]
+let alts=document.querySelectorAll(".alternativa")
+
+alts.forEach(a=>a.onclick=null)
+
+let corretaIndex=q.embaralhadas.findIndex(o=>o.correta)
+
+alts[i].classList.add("marcada")
+
+if(i===corretaIndex){
+alts[i].classList.add("correta")
+historico[atual]=true
+}else{
+alts[i].classList.add("errada")
+alts[corretaIndex].classList.add("correta")
+historico[atual]=false
+}
+
+atualizarStats()
+mostrarAcoes()
+}
+
+function mostrarAcoes(){
+
+let div=document.getElementById("acoes")
+div.innerHTML=""
+
+let btnExp=document.createElement("button")
+btnExp.innerText="📘 Ver explicação"
+btnExp.onclick=mostrarExplicacao
+
+let btnNext=document.createElement("button")
+btnNext.innerText="➡ Próxima"
+btnNext.onclick=proxima
+
+div.appendChild(btnExp)
+div.appendChild(btnNext)
+}
+
+function mostrarExplicacao(){
+let q=fila[atual]
+document.getElementById("explicacao").innerText=q.explicacao
+}
+
+function proxima(){
+atual++
+mostrar()
+}
+
+function mostrarRevisao(){
+
+let q=fila[atual]
+let alts=document.querySelectorAll(".alternativa")
+
+let corretaIndex=q.embaralhadas.findIndex(o=>o.correta)
+let marcada=respostas[atual]
+
+alts[marcada].classList.add("marcada")
+
+if(marcada===corretaIndex){
+alts[marcada].classList.add("correta")
+}else{
+alts[marcada].classList.add("errada")
+alts[corretaIndex].classList.add("correta")
+}
+}
+
+function atualizarStats(){
+
+let total=historico.length
+let acertos=historico.filter(v=>v).length
+let perc=total?Math.round((acertos/total)*100):0
+
+document.getElementById("verde").style.width=perc+"%"
+document.getElementById("vermelho").style.width=(100-perc)+"%"
+document.getElementById("porcentagem").innerText=perc+"% de acerto"
+
+let h=document.getElementById("historico")
+h.innerHTML=""
+
+historico.forEach((v,i)=>{
+let div=document.createElement("div")
+div.className="bola "+(v?"acerto":"erro")
+div.innerText=i+1
+div.onclick=()=>{atual=i;mostrar()}
+h.appendChild(div)
+})
+}
+
+document.getElementById("btnIniciar").addEventListener("click", iniciar)
+
+</script>
+
+</body>
+</html>

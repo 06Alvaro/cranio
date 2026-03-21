@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Atlas Interativo do Crânio</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:100vh;
+}
+
+h1{
+margin-bottom:40px;
+text-align:center;
+}
+
+.menu{
+display:flex;
+flex-direction:column;
+gap:20px;
+}
+
+button{
+padding:20px 40px;
+font-size:18px;
+border:none;
+border-radius:10px;
+background:#ff2a2a;
+color:white;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+width:260px;
+}
+
+button:hover{
+transform:scale(1.05);
+background:#ff4444;
+}
+
+.sub{
+margin-top:20px;
+font-size:14px;
+opacity:0.8;
+text-align:center;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🧠 Atlas Interativo do Crânio</h1>
+
+<div class="menu">
+<button onclick="irPara('perguntas.html')">📚 Modo Perguntas</button>
+<button onclick="irPara('anatomia.html')">🦴 Anatomia 2D</button>
+</div>
+
+<div class="sub">
+Escolha um modo para começar
+</div>
+
+<script>
+function irPara(pagina){
+window.location.href = pagina
+}
+</script>
+
+</body>
+</html>
