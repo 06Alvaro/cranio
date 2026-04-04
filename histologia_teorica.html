@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Histologia - Questões com Imagem</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+display:flex;
+gap:40px;
+align-items:center;
+}
+
+/* IMAGEM */
+.imagem{
+width:400px;
+height:400px;
+background:#000;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;
+}
+
+.imagem img{
+width:100%;
+}
+
+/* QUIZ */
+.quiz{
+width:400px;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+background:#ff2a2a;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff4444;
+}
+
+.opcao{
+background:rgba(255,255,255,0.1);
+padding:10px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.opcao:hover{
+background:rgba(255,255,255,0.2);
+}
+
+.correta{
+background:green !important;
+}
+
+.errada{
+background:red !important;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- IMAGEM -->
+<div class="imagem">
+<img id="imgQuestao" src="">
+</div>
+
+<!-- QUIZ -->
+<div class="quiz">
+
+<h2 id="pergunta1"></h2>
+<div id="opcoes1"></div>
+
+<h2 id="pergunta2"></h2>
+<div id="opcoes2"></div>
+
+<button onclick="verificar()">Verificar</button>
+<button onclick="proxima()">Próxima</button>
+
+<div id="resultado"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let banco = [
+{
+imagem: "glicocalix.png",
+
+p1: "Que estrutura é essa?",
+o1: ["Ribossomo","Glicocálix","Lisossomo","Complexo de Golgi"],
+c1: 1,
+
+p2: "Qual sua principal função?",
+o2: ["Produção de ATP","Proteção e reconhecimento celular","Síntese de proteínas","Digestão intracelular"],
+c2: 1
+},
+
+{
+imagem: "epitelio_simples.png",
+
+p1: "Que tipo de tecido é esse?",
+o1: ["Epitélio simples","Tecido conjuntivo","Tecido muscular","Tecido nervoso"],
+c1: 0,
+
+p2: "Qual sua principal função?",
+o2: ["Contração","Revestimento e absorção","Condução nervosa","Sustentação"],
+c2: 1
+},
+
+{
+imagem: "tecido_adiposo.png",
+
+p1: "Que tecido é esse?",
+o1: ["Tecido adiposo","Tecido ósseo","Tecido cartilaginoso","Tecido epitelial"],
+c1: 0,
+
+p2: "Função principal?",
+o2: ["Armazenar energia","Produzir hormônios tireoidianos","Contração","Transporte de oxigênio"],
+c2: 0
+}
+
+]
+
+let atual = 0
+let resp1 = null
+let resp2 = null
+
+function carregar(){
+atual = Math.floor(Math.random()*banco.length)
+
+let q = banco[atual]
+
+imgQuestao.src = q.imagem
+
+pergunta1.innerText = q.p1
+pergunta2.innerText = q.p2
+
+criarOpcoes(q.o1, "opcoes1", 1)
+criarOpcoes(q.o2, "opcoes2", 2)
+
+resultado.innerText = ""
+
+resp1 = null
+resp2 = null
+}
+
+function criarOpcoes(lista, id, grupo){
+let div = document.getElementById(id)
+div.innerHTML = ""
+
+lista.forEach((op, i)=>{
+let el = document.createElement("div")
+el.className = "opcao"
+el.innerText = op
+
+el.onclick = ()=>{
+if(grupo==1){resp1=i}
+if(grupo==2){resp2=i}
+
+/* reset visual */
+[...div.children].forEach(c=>c.classList.remove("correta","errada"))
+el.style.background = "#555"
+}
+
+div.appendChild(el)
+})
+}
+
+function verificar(){
+let q = banco[atual]
+
+let op1 = document.getElementById("opcoes1").children
+let op2 = document.getElementById("opcoes2").children
+
+/* mostrar respostas */
+op1[q.c1].classList.add("correta")
+op2[q.c2].classList.add("correta")
+
+if(resp1 !== q.c1 && resp1 !== null){
+op1[resp1].classList.add("errada")
+}
+
+if(resp2 !== q.c2 && resp2 !== null){
+op2[resp2].classList.add("errada")
+}
+
+/* resultado */
+if(resp1 === q.c1 && resp2 === q.c2){
+resultado.innerText = "✅ Perfeito!"
+resultado.style.color = "lightgreen"
+}else{
+resultado.innerText = "❌ Revise e tente novamente"
+resultado.style.color = "red"
+}
+}
+
+function proxima(){
+carregar()
+}
+
+carregar()
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Microscópio Virtual</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+display:flex;
+gap:40px;
+align-items:center;
+}
+
+/* PAINEL */
+.painel{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+/* MICROSCÓPIO */
+#microscopio{
+width:500px;
+height:500px;
+border-radius:50%;
+overflow:hidden;
+border:15px solid black;
+box-shadow:0 0 50px black inset;
+position:relative;
+}
+
+#imagem{
+position:absolute;
+width:1200px;
+cursor:grab;
+user-select:none;
+}
+
+/* BOTÕES */
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+background:#ff2a2a;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff4444;
+}
+
+input{
+padding:10px;
+border-radius:8px;
+border:none;
+width:300px;
+}
+
+/* AUTOCOMPLETE */
+#sugestoes{
+background:white;
+color:black;
+border-radius:8px;
+width:300px;
+max-height:150px;
+overflow-y:auto;
+}
+
+.opcao{
+padding:8px;
+cursor:pointer;
+}
+
+.opcao:hover{
+background:#eee;
+}
+
+#resultado{
+font-weight:bold;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- ESQUERDA -->
+<div class="painel">
+
+<h2>🔬 Identifique o tecido</h2>
+
+<div>
+Zoom:
+<button onclick="zoom(1)">4x</button>
+<button onclick="zoom(1.5)">10x</button>
+<button onclick="zoom(2)">40x</button>
+<button onclick="zoom(3)">100x</button>
+</div>
+
+<div>
+Foco:
+<input type="range" min="0" max="10" value="5" id="foco">
+</div>
+
+<input type="text" id="resposta" placeholder="Digite o tecido...">
+<div id="sugestoes"></div>
+
+<button onclick="verificar()">Verificar</button>
+<button onclick="proxima()">Próxima lâmina</button>
+<button onclick="voltar()">⬅ Voltar lâmina</button>
+
+<div id="resultado"></div>
+
+</div>
+
+<!-- DIREITA -->
+<div id="microscopio">
+<img id="imagem">
+</div>
+
+</div>
+
+<script>
+
+let img = document.getElementById("imagem")
+let foco = document.getElementById("foco")
+let sugestoesDiv = document.getElementById("sugestoes")
+let input = document.getElementById("resposta")
+let resultado = document.getElementById("resultado")
+
+let escala = 1
+let posX = 0
+let posY = 0
+
+let imagens = [
+"tecido_rim",
+"tecido_conjuntivo_frouxo",
+"tecido_epitelial_cilindrico_simples",
+"tecido_epitelial_pseudoestratificado_ciliado",
+"tecido_epitelial_revestimento_estratificado_pavimentoso"
+]
+
+let atual = 0
+let historico = []
+
+/* CARREGAR IMAGEM */
+function carregarImagem(){
+img.src = imagens[atual] + ".png"
+
+img.onerror = () => {
+img.src = imagens[atual] + ".jpg"
+}
+
+input.value = ""
+sugestoesDiv.innerHTML = ""
+resultado.innerText = ""
+
+/* reset */
+posX = 0
+posY = 0
+escala = 1
+img.style.transform = `scale(1) translate(0,0)`
+}
+
+/* PRÓXIMA */
+function proxima(){
+historico.push(atual)
+atual = Math.floor(Math.random() * imagens.length)
+carregarImagem()
+}
+
+/* VOLTAR */
+function voltar(){
+if(historico.length > 0){
+atual = historico.pop()
+carregarImagem()
+}
+}
+
+/* ZOOM */
+function zoom(valor){
+escala = valor
+img.style.transform = `scale(${escala}) translate(${posX}px, ${posY}px)`
+}
+
+/* FOCO */
+foco.addEventListener("input", ()=>{
+let blur = Math.abs(5 - foco.value)
+img.style.filter = `blur(${blur}px)`
+})
+
+/* VERIFICAR */
+function verificar(){
+let correta = imagens[atual]
+
+let respostaUsuario = input.value
+.toLowerCase()
+.replaceAll(" ", "_")
+
+if(respostaUsuario === correta){
+resultado.innerText = "✅ Correto!"
+resultado.style.color = "lightgreen"
+}else{
+resultado.innerText = "❌ Errado! Tente novamente."
+resultado.style.color = "red"
+}
+}
+
+/* AUTOCOMPLETE */
+input.addEventListener("input", ()=>{
+let valor = input.value.toLowerCase().replaceAll(" ", "_")
+
+sugestoesDiv.innerHTML = ""
+
+if(valor === "") return
+
+let filtrados = imagens.filter(nome => nome.includes(valor))
+
+filtrados.forEach(nome=>{
+let div = document.createElement("div")
+div.classList.add("opcao")
+
+div.innerText = nome.replaceAll("_", " ")
+
+div.onclick = ()=>{
+input.value = nome.replaceAll("_", " ")
+sugestoesDiv.innerHTML = ""
+}
+
+sugestoesDiv.appendChild(div)
+})
+})
+
+/* ARRASTAR SUAVE */
+let arrastando = false
+let startX, startY
+
+img.addEventListener("mousedown", (e)=>{
+arrastando = true
+img.style.cursor = "grabbing"
+startX = e.clientX
+startY = e.clientY
+})
+
+document.addEventListener("mouseup", ()=>{
+arrastando = false
+img.style.cursor = "grab"
+})
+
+document.addEventListener("mousemove", (e)=>{
+if(arrastando){
+
+let dx = (e.clientX - startX) / escala
+let dy = (e.clientY - startY) / escala
+
+posX += dx
+posY += dy
+
+/* limite */
+posX = Math.max(-300, Math.min(300, posX))
+posY = Math.max(-300, Math.min(300, posY))
+
+img.style.transform = `scale(${escala}) translate(${posX}px, ${posY}px)`
+
+startX = e.clientX
+startY = e.clientY
+}
+})
+
+/* INICIAR */
+carregarImagem()
+
+</script>
+
+</body>
+</html>

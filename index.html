@@ -52,23 +52,55 @@ font-size:14px;
 opacity:0.8;
 text-align:center;
 }
+
+/* esconder telas */
+.hidden{
+display:none;
+}
 </style>
 
 </head>
 
 <body>
 
-<h1></h1>Atlas Interativo</h1>
+<h1>🧠 Atlas Interativo do Crânio</h1>
 
-<div class="menu">
+<!-- MENU PRINCIPAL -->
+<div class="menu" id="menuPrincipal">
 <button onclick="irPara('perguntas.html')">📚 Modo Perguntas</button>
-<button onclick="irPara('cranio.html')">🦴 Anatomia 2D</button>
+<button onclick="irPara('anatomia.html')">🦴 Anatomia 2D</button>
+<button onclick="abrirHistologia()">🔬 Histologia</button>
+</div>
+
+<!-- MENU HISTOLOGIA -->
+<div class="menu hidden" id="menuHistologia">
+<button onclick="irPara('histologia_teorica.html')">📖 Histologia Teórica</button>
+<button onclick="irPara('histologia_pratica.html')">🧪 Histologia Prática</button>
+<button onclick="voltarMenu()">⬅ Voltar</button>
+</div>
+
+<div class="sub">
+Escolha um modo para começar
 </div>
 
 <script>
+
 function irPara(pagina){
 window.location.href = pagina
 }
+
+// abre tela de histologia
+function abrirHistologia(){
+document.getElementById("menuPrincipal").classList.add("hidden")
+document.getElementById("menuHistologia").classList.remove("hidden")
+}
+
+// volta para menu principal
+function voltarMenu(){
+document.getElementById("menuHistologia").classList.add("hidden")
+document.getElementById("menuPrincipal").classList.remove("hidden")
+}
+
 </script>
 
 </body>
