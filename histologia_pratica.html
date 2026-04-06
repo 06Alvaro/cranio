@@ -22,14 +22,12 @@ gap:40px;
 align-items:center;
 }
 
-/* PAINEL */
 .painel{
 display:flex;
 flex-direction:column;
 gap:15px;
 }
 
-/* MICROSCÓPIO */
 #microscopio{
 width:500px;
 height:500px;
@@ -47,7 +45,6 @@ cursor:grab;
 user-select:none;
 }
 
-/* BOTÕES */
 button{
 padding:10px;
 border:none;
@@ -69,7 +66,6 @@ border:none;
 width:300px;
 }
 
-/* AUTOCOMPLETE */
 #sugestoes{
 background:white;
 color:black;
@@ -99,7 +95,6 @@ font-weight:bold;
 
 <div class="container">
 
-<!-- ESQUERDA -->
 <div class="painel">
 
 <h2>🔬 Identifique o tecido</h2>
@@ -121,6 +116,7 @@ Foco:
 <div id="sugestoes"></div>
 
 <button onclick="verificar()">Verificar</button>
+<button onclick="mostrarResposta()">Mostrar resposta</button>
 <button onclick="proxima()">Próxima lâmina</button>
 <button onclick="voltar()">⬅ Voltar lâmina</button>
 
@@ -128,7 +124,6 @@ Foco:
 
 </div>
 
-<!-- DIREITA -->
 <div id="microscopio">
 <img id="imagem">
 </div>
@@ -148,15 +143,55 @@ let posX = 0
 let posY = 0
 
 let imagens = [
-"tecido_rim",
-"tecido_conjuntivo_frouxo",
-"tecido_epitelial_cilindrico_simples",
-"tecido_epitelial_pseudoestratificado_ciliado",
-"tecido_epitelial_revestimento_estratificado_pavimentoso"
+"glandula_endocrina_do_tipo_folicular",
+"tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_ducto_deferente",
+"tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_e_tecido_epitelial_de_revestimento_cilindrico_simples_com_estereocilios_epididimo",
+"tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_traqueia",
+"tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_tuba_uterina",
+"tecido_epitelial_de_revestimento_cilindrico_simples_com_microvilos_jejuno",
+"tecido_epitelial_de_revestimento_cilindrico_simples_com_microvilos_reto",
+"tecido_epitelial_de_revestimento_cilindrico_simples_estomago",
+"tecido_epitelial_de_revestimento_cubico_estratificado_ovario",
+"tecido_epitelial_de_revestimento_cubico_simples_ovario",
+"tecido_epitelial_de_revestimento_cubico_simples_rim",
+"tecido_epitelial_glandular_com_acinos_serosos_pancreas",
+"tecido_epitelial_de_revestimento_pavimentoso_simples_rim",
+"tecido_epitelial_de_revestimento_pavimentoso_simples_ovario",
+"tecido_epitelial_de_revestimento_pavimentoso_estratificado_queratinizado_de_pele_espessa_pele_de_polpa_digital",
+"tecido_epitelial_de_revestimento_pavimentoso_estratificado_queratinizado_de_pele_delgada_labio",
+"tecido_epitelial_de_revestimento_pavimentoso_estratificado_nao_queratinizado_labio",
+"tecido_epitelial_de_revestimento_pavimentoso_estratificado_nao_queratinizado_esofago",
+"tecido_epitelial_de_revestimento_de_transição_ureter",
+"tecido_epitelial_de_revestimento_de_transição_bexiga_vazia",
+"tecido_epitelial_de_revestimento_de_transição_bexiga_cheia",
+"tecido_epitelial_de_revestimento_cubico_simples_traqueia",
+"tecido_epitelial_glandular_glandula_acinosa_ramificada_simples_glandula_sebacia_labio",
+"tecido_epitelial_glandular_glandula_acinosa_ramificada_simples_pele",
+"tecido_epitelial_glandular_glandula_tubulo_acinosa_composta_glandula_sublingual",
+"tecido_epitelial_glandular_glandula_tubulo_acinosa_composta_glandula_submandibular",
+"tecido_epitelial_glandular_glandula_tubulo_alveolar_composta_glandula_mamaria",
+"tecido_epitelial_glandular_glandula_tubulo_enovelada_simples_glandula_sudoripara_pele_de_polpa_digital",
+"tecido_epitelial_glandular_glandulas_tubulo_alveolares_compostas_prostata",
+"tecido_epitelial_glandular_glandulas_tubulosas_ramificadas_estomago",
+"tecido_epitelial_glandular_glandulas_tubulosas_ramificadas_simples_utero_fase_secretora",
+"tecido_epitelial_glandular_glandulas_tubulosas_simples_ileo",
+"tecido_epitelial_glandular_glandulas_tubulosas_simples_jejuno",
+"tecido_epitelial_glandular_glandulas_tubulosas_simples_reto",
+"tecido_epitelial_glandular_glandulas_tubulosas_simples_utero_fase_proliferativa",
+"tecido_epitelial_glandular_ilhota_de_langerhans_glandula_endocrina_do_tipo_cordonal_pancreas",
 ]
 
 let atual = 0
 let historico = []
+
+/* NORMALIZAR TEXTO (remove acento) */
+function normalizar(texto){
+return texto
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "")
+.replaceAll(" ", "_")
+}
 
 /* CARREGAR IMAGEM */
 function carregarImagem(){
@@ -170,7 +205,6 @@ input.value = ""
 sugestoesDiv.innerHTML = ""
 resultado.innerText = ""
 
-/* reset */
 posX = 0
 posY = 0
 escala = 1
@@ -206,11 +240,9 @@ img.style.filter = `blur(${blur}px)`
 
 /* VERIFICAR */
 function verificar(){
-let correta = imagens[atual]
 
-let respostaUsuario = input.value
-.toLowerCase()
-.replaceAll(" ", "_")
+let respostaUsuario = normalizar(input.value)
+let correta = normalizar(imagens[atual])
 
 if(respostaUsuario === correta){
 resultado.innerText = "✅ Correto!"
@@ -221,15 +253,24 @@ resultado.style.color = "red"
 }
 }
 
+/* MOSTRAR RESPOSTA */
+function mostrarResposta(){
+let correta = imagens[atual]
+let formatado = correta.replaceAll("_", " ")
+
+resultado.innerText = "💡 Resposta: " + formatado
+resultado.style.color = "yellow"
+}
+
 /* AUTOCOMPLETE */
 input.addEventListener("input", ()=>{
-let valor = input.value.toLowerCase().replaceAll(" ", "_")
+let valor = normalizar(input.value)
 
 sugestoesDiv.innerHTML = ""
 
 if(valor === "") return
 
-let filtrados = imagens.filter(nome => nome.includes(valor))
+let filtrados = imagens.filter(nome => normalizar(nome).includes(valor))
 
 filtrados.forEach(nome=>{
 let div = document.createElement("div")
@@ -246,7 +287,7 @@ sugestoesDiv.appendChild(div)
 })
 })
 
-/* ARRASTAR SUAVE */
+/* ARRASTAR */
 let arrastando = false
 let startX, startY
 
@@ -271,7 +312,6 @@ let dy = (e.clientY - startY) / escala
 posX += dx
 posY += dy
 
-/* limite */
 posX = Math.max(-300, Math.min(300, posX))
 posY = Math.max(-300, Math.min(300, posY))
 
