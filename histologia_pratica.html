@@ -181,10 +181,22 @@ let imagens = [
 "tecido_epitelial_glandular_ilhota_de_langerhans_glandula_endocrina_do_tipo_cordonal_pancreas",
 ]
 
+/* EMBARALHAR ARRAY */
+function embaralhar(array){
+for(let i = array.length - 1; i > 0; i--){
+let j = Math.floor(Math.random() * (i + 1))
+let temp = array[i]
+array[i] = array[j]
+array[j] = temp
+}
+}
+
+/* INICIALIZA EMBARALHADO */
+embaralhar(imagens)
+
 let atual = 0
 let historico = []
 
-/* NORMALIZAR TEXTO (remove acento) */
 function normalizar(texto){
 return texto
 .toLowerCase()
@@ -193,7 +205,6 @@ return texto
 .replaceAll(" ", "_")
 }
 
-/* CARREGAR IMAGEM */
 function carregarImagem(){
 img.src = imagens[atual] + ".png"
 
@@ -211,14 +222,18 @@ escala = 1
 img.style.transform = `scale(1) translate(0,0)`
 }
 
-/* PRÓXIMA */
 function proxima(){
 historico.push(atual)
-atual = Math.floor(Math.random() * imagens.length)
+atual++
+
+if(atual >= imagens.length){
+embaralhar(imagens)
+atual = 0
+}
+
 carregarImagem()
 }
 
-/* VOLTAR */
 function voltar(){
 if(historico.length > 0){
 atual = historico.pop()
@@ -226,21 +241,17 @@ carregarImagem()
 }
 }
 
-/* ZOOM */
 function zoom(valor){
 escala = valor
 img.style.transform = `scale(${escala}) translate(${posX}px, ${posY}px)`
 }
 
-/* FOCO */
 foco.addEventListener("input", ()=>{
 let blur = Math.abs(5 - foco.value)
 img.style.filter = `blur(${blur}px)`
 })
 
-/* VERIFICAR */
 function verificar(){
-
 let respostaUsuario = normalizar(input.value)
 let correta = normalizar(imagens[atual])
 
@@ -253,7 +264,6 @@ resultado.style.color = "red"
 }
 }
 
-/* MOSTRAR RESPOSTA */
 function mostrarResposta(){
 let correta = imagens[atual]
 let formatado = correta.replaceAll("_", " ")
@@ -262,7 +272,6 @@ resultado.innerText = "💡 Resposta: " + formatado
 resultado.style.color = "yellow"
 }
 
-/* AUTOCOMPLETE */
 input.addEventListener("input", ()=>{
 let valor = normalizar(input.value)
 
@@ -287,7 +296,6 @@ sugestoesDiv.appendChild(div)
 })
 })
 
-/* ARRASTAR */
 let arrastando = false
 let startX, startY
 
@@ -322,7 +330,6 @@ startY = e.clientY
 }
 })
 
-/* INICIAR */
 carregarImagem()
 
 </script>
