@@ -36,12 +36,12 @@ overflow:hidden;
 border:15px solid black;
 box-shadow:0 0 50px black inset;
 position:relative;
-touch-action:none;
+touch-action:none; /* IMPORTANTE para mobile */
 }
 
 #imagem{
 position:absolute;
-width:2300px;
+width:2300px; /* aumentei um pouco para melhor visual */
 cursor:grab;
 user-select:none;
 }
@@ -183,11 +183,11 @@ let imagens = [
 ]
 
 function embaralhar(array){
-for(let i=array.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1))
-let temp=array[i]
-array[i]=array[j]
-array[j]=temp
+for(let i = array.length - 1; i > 0; i--){
+let j = Math.floor(Math.random() * (i + 1))
+let temp = array[i]
+array[i] = array[j]
+array[j] = temp
 }
 }
 
@@ -208,23 +208,10 @@ input.value=""
 sugestoesDiv.innerHTML=""
 resultado.innerText=""
 
-escala = 1
-
-img.onload = () => {
-
-let larguraImg = img.clientWidth
-let alturaImg = img.clientHeight
-
-let box = document.getElementById("microscopio")
-
-let larguraBox = box.clientWidth
-let alturaBox = box.clientHeight
-
-posX = (larguraBox - larguraImg * escala) / 2
-posY = (alturaBox - alturaImg * escala) / 2
-
-img.style.transform = `scale(${escala}) translate(${posX}px, ${posY}px)`
-}
+posX=0
+posY=0
+escala=1
+img.style.transform=`scale(1) translate(0,0)`
 }
 
 function proxima(){
@@ -293,6 +280,7 @@ sugestoesDiv.appendChild(div)
 let arrastando=false
 let startX,startY
 
+// MOUSE
 img.addEventListener("mousedown",(e)=>{
 arrastando=true
 img.style.cursor="grabbing"
@@ -319,6 +307,7 @@ startY=e.clientY
 }
 })
 
+// TOUCH (celular)
 img.addEventListener("touchstart",(e)=>{
 arrastando=true
 let touch=e.touches[0]
