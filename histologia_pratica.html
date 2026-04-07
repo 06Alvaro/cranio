@@ -41,6 +41,8 @@ touch-action:none;
 
 #imagem{
 position:absolute;
+top:50%;
+left:50%;
 width:2300px;
 cursor:grab;
 user-select:none;
@@ -145,14 +147,18 @@ let posX = 0
 let posY = 0
 
 function atualizarTransform(){
-    img.style.transform = `translate(${posX}px, ${posY}px) scale(${escala})`
+    img.style.transform = `
+        translate(-50%, -50%)
+        translate(${posX}px, ${posY}px)
+        scale(${escala})
+    `
 }
 
 let imagens = [
 "glandula_endocrina_do_tipo_folicular",
 "tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_ducto_deferente",
 "tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_e_tecido_epitelial_de_revestimento_cilindrico_simples_com_estereocilios_epididimo",
-"tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_traqueia",
+    "tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_traqueia",
 "tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_tuba_uterina",
 "tecido_epitelial_de_revestimento_cilindrico_simples_com_microvilos_jejuno",
 "tecido_epitelial_de_revestimento_cilindrico_simples_com_microvilos_reto",
@@ -185,6 +191,8 @@ let imagens = [
 "tecido_epitelial_glandular_glandulas_tubulosas_simples_reto",
 "tecido_epitelial_glandular_glandulas_tubulosas_simples_utero_fase_proliferativa",
 "tecido_epitelial_glandular_ilhota_de_langerhans_glandula_endocrina_do_tipo_cordonal_pancreas",
+]
+
 ]
 
 function embaralhar(array){
@@ -265,24 +273,6 @@ resultado.innerText="💡 Resposta: "+imagens[atual].replaceAll("_"," ")
 resultado.style.color="yellow"
 }
 
-input.addEventListener("input", ()=>{
-let valor=normalizar(input.value)
-sugestoesDiv.innerHTML=""
-if(valor==="") return
-
-imagens.filter(nome=>normalizar(nome).includes(valor))
-.forEach(nome=>{
-let div=document.createElement("div")
-div.classList.add("opcao")
-div.innerText=nome.replaceAll("_"," ")
-div.onclick=()=>{
-input.value=div.innerText
-sugestoesDiv.innerHTML=""
-}
-sugestoesDiv.appendChild(div)
-})
-})
-
 // =====================
 // ARRASTAR (MOUSE)
 // =====================
@@ -309,8 +299,8 @@ let dy=(e.clientY-startY)/escala
 posX+=dx
 posY+=dy
 
-posX=Math.max(-300,Math.min(300,posX))
-posY=Math.max(-300,Math.min(300,posY))
+posX=Math.max(-800,Math.min(800,posX))
+posY=Math.max(-800,Math.min(800,posY))
 
 atualizarTransform()
 
@@ -320,7 +310,7 @@ startY=e.clientY
 })
 
 // =====================
-// ARRASTAR (TOUCH)
+// TOUCH
 // =====================
 img.addEventListener("touchstart",(e)=>{
 arrastando=true
@@ -335,7 +325,6 @@ arrastando=false
 
 document.addEventListener("touchmove",(e)=>{
 if(arrastando){
-
 if(e.touches.length > 1) return
 
 let touch=e.touches[0]
@@ -346,63 +335,14 @@ let dy=(touch.clientY-startY)/escala
 posX+=dx
 posY+=dy
 
-posX=Math.max(-300,Math.min(300,posX))
-posY=Math.max(-300,Math.min(300,posY))
+posX=Math.max(-800,Math.min(800,posX))
+posY=Math.max(-800,Math.min(800,posY))
 
 atualizarTransform()
 
 startX=touch.clientX
 startY=touch.clientY
 }
-})
-
-// =====================
-// ZOOM COM SCROLL
-// =====================
-document.addEventListener("wheel",(e)=>{
-e.preventDefault()
-
-let zoom = e.deltaY * -0.001
-escala += zoom
-
-escala = Math.min(Math.max(escala, 0.5), 4)
-
-atualizarTransform()
-},{ passive:false })
-
-// =====================
-// ZOOM COM PINÇA
-// =====================
-let distanciaInicial = null
-
-function getDistancia(touches){
-let dx = touches[0].clientX - touches[1].clientX
-let dy = touches[0].clientY - touches[1].clientY
-return Math.sqrt(dx*dx + dy*dy)
-}
-
-document.addEventListener("touchstart",(e)=>{
-if(e.touches.length===2){
-distanciaInicial = getDistancia(e.touches)
-}
-})
-
-document.addEventListener("touchmove",(e)=>{
-if(e.touches.length===2 && distanciaInicial){
-let novaDistancia = getDistancia(e.touches)
-let zoom = novaDistancia / distanciaInicial
-
-escala *= zoom
-escala = Math.min(Math.max(escala, 0.5), 4)
-
-atualizarTransform()
-
-distanciaInicial = novaDistancia
-}
-},{ passive:false })
-
-document.addEventListener("touchend",()=>{
-distanciaInicial=null
 })
 
 carregarImagem()
