@@ -36,11 +36,12 @@ overflow:hidden;
 border:15px solid black;
 box-shadow:0 0 50px black inset;
 position:relative;
+touch-action:none; /* IMPORTANTE para mobile */
 }
 
 #imagem{
 position:absolute;
-width:3300px;
+width:2300px; /* aumentei um pouco para melhor visual */
 cursor:grab;
 user-select:none;
 }
@@ -181,7 +182,6 @@ let imagens = [
 "tecido_epitelial_glandular_ilhota_de_langerhans_glandula_endocrina_do_tipo_cordonal_pancreas",
 ]
 
-/* EMBARALHAR ARRAY */
 function embaralhar(array){
 for(let i = array.length - 1; i > 0; i--){
 let j = Math.floor(Math.random() * (i + 1))
@@ -191,142 +191,146 @@ array[j] = temp
 }
 }
 
-/* INICIALIZA EMBARALHADO */
 embaralhar(imagens)
 
 let atual = 0
 let historico = []
 
 function normalizar(texto){
-return texto
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "")
-.replaceAll(" ", "_")
+return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replaceAll(" ","_")
 }
 
 function carregarImagem(){
 img.src = imagens[atual] + ".png"
+img.onerror = ()=>{ img.src = imagens[atual] + ".jpg" }
 
-img.onerror = () => {
-img.src = imagens[atual] + ".jpg"
-}
+input.value=""
+sugestoesDiv.innerHTML=""
+resultado.innerText=""
 
-input.value = ""
-sugestoesDiv.innerHTML = ""
-resultado.innerText = ""
-
-posX = 0
-posY = 0
-escala = 1
-img.style.transform = `scale(1) translate(0,0)`
+posX=0
+posY=0
+escala=1
+img.style.transform=`scale(1) translate(0,0)`
 }
 
 function proxima(){
 historico.push(atual)
 atual++
-
-if(atual >= imagens.length){
+if(atual>=imagens.length){
 embaralhar(imagens)
-atual = 0
+atual=0
 }
-
 carregarImagem()
 }
 
 function voltar(){
-if(historico.length > 0){
-atual = historico.pop()
+if(historico.length>0){
+atual=historico.pop()
 carregarImagem()
 }
 }
 
 function zoom(valor){
-escala = valor
-img.style.transform = `scale(${escala}) translate(${posX}px, ${posY}px)`
+escala=valor
+img.style.transform=`scale(${escala}) translate(${posX}px, ${posY}px)`
 }
 
 foco.addEventListener("input", ()=>{
-let blur = Math.abs(5 - foco.value)
-img.style.filter = `blur(${blur}px)`
+let blur=Math.abs(5-foco.value)
+img.style.filter=`blur(${blur}px)`
 })
 
 function verificar(){
-let respostaUsuario = normalizar(input.value)
-let correta = normalizar(imagens[atual])
+let respostaUsuario=normalizar(input.value)
+let correta=normalizar(imagens[atual])
 
-if(respostaUsuario === correta){
-resultado.innerText = "✅ Correto!"
-resultado.style.color = "lightgreen"
+if(respostaUsuario===correta){
+resultado.innerText="✅ Correto!"
+resultado.style.color="lightgreen"
 }else{
-resultado.innerText = "❌ Errado! Tente novamente."
-resultado.style.color = "red"
+resultado.innerText="❌ Errado!"
+resultado.style.color="red"
 }
 }
 
 function mostrarResposta(){
-let correta = imagens[atual]
-let formatado = correta.replaceAll("_", " ")
-
-resultado.innerText = "💡 Resposta: " + formatado
-resultado.style.color = "yellow"
+resultado.innerText="💡 Resposta: "+imagens[atual].replaceAll("_"," ")
+resultado.style.color="yellow"
 }
 
 input.addEventListener("input", ()=>{
-let valor = normalizar(input.value)
+let valor=normalizar(input.value)
+sugestoesDiv.innerHTML=""
+if(valor==="") return
 
-sugestoesDiv.innerHTML = ""
-
-if(valor === "") return
-
-let filtrados = imagens.filter(nome => normalizar(nome).includes(valor))
-
-filtrados.forEach(nome=>{
-let div = document.createElement("div")
+imagens.filter(nome=>normalizar(nome).includes(valor))
+.forEach(nome=>{
+let div=document.createElement("div")
 div.classList.add("opcao")
-
-div.innerText = nome.replaceAll("_", " ")
-
-div.onclick = ()=>{
-input.value = nome.replaceAll("_", " ")
-sugestoesDiv.innerHTML = ""
+div.innerText=nome.replaceAll("_"," ")
+div.onclick=()=>{
+input.value=div.innerText
+sugestoesDiv.innerHTML=""
 }
-
 sugestoesDiv.appendChild(div)
 })
 })
 
-let arrastando = false
-let startX, startY
+let arrastando=false
+let startX,startY
 
-img.addEventListener("mousedown", (e)=>{
-arrastando = true
-img.style.cursor = "grabbing"
-startX = e.clientX
-startY = e.clientY
+// MOUSE
+img.addEventListener("mousedown",(e)=>{
+arrastando=true
+img.style.cursor="grabbing"
+startX=e.clientX
+startY=e.clientY
 })
 
-document.addEventListener("mouseup", ()=>{
-arrastando = false
-img.style.cursor = "grab"
+document.addEventListener("mouseup",()=>{
+arrastando=false
+img.style.cursor="grab"
 })
 
-document.addEventListener("mousemove", (e)=>{
+document.addEventListener("mousemove",(e)=>{
 if(arrastando){
+let dx=(e.clientX-startX)/escala
+let dy=(e.clientY-startY)/escala
+posX+=dx
+posY+=dy
+posX=Math.max(-300,Math.min(300,posX))
+posY=Math.max(-300,Math.min(300,posY))
+img.style.transform=`scale(${escala}) translate(${posX}px, ${posY}px)`
+startX=e.clientX
+startY=e.clientY
+}
+})
 
-let dx = (e.clientX - startX) / escala
-let dy = (e.clientY - startY) / escala
+// TOUCH (celular)
+img.addEventListener("touchstart",(e)=>{
+arrastando=true
+let touch=e.touches[0]
+startX=touch.clientX
+startY=touch.clientY
+})
 
-posX += dx
-posY += dy
+document.addEventListener("touchend",()=>{
+arrastando=false
+})
 
-posX = Math.max(-300, Math.min(300, posX))
-posY = Math.max(-300, Math.min(300, posY))
-
-img.style.transform = `scale(${escala}) translate(${posX}px, ${posY}px)`
-
-startX = e.clientX
-startY = e.clientY
+document.addEventListener("touchmove",(e)=>{
+if(arrastando){
+let touch=e.touches[0]
+let dx=(touch.clientX-startX)/escala
+let dy=(touch.clientY-startY)/escala
+posX+=dx
+posY+=dy
+posX=Math.max(-300,Math.min(300,posX))
+posY=Math.max(-300,Math.min(300,posY))
+img.style.transform=`scale(${escala}) translate(${posX}px, ${posY}px)`
+startX=touch.clientX
+startY=touch.clientY
 }
 })
 
