@@ -36,14 +36,15 @@ overflow:hidden;
 border:15px solid black;
 box-shadow:0 0 50px black inset;
 position:relative;
-touch-action:none; /* IMPORTANTE para mobile */
+touch-action:none;
 }
 
 #imagem{
 position:absolute;
-width:2300px; /* aumentei um pouco para melhor visual */
+width:2300px;
 cursor:grab;
 user-select:none;
+transform-origin:center center;
 }
 
 button{
@@ -143,9 +144,13 @@ let escala = 1
 let posX = 0
 let posY = 0
 
+function atualizarTransform(){
+    img.style.transform = `translate(${posX}px, ${posY}px) scale(${escala})`
+}
+
 let imagens = [
 "glandula_endocrina_do_tipo_folicular",
-"tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_ducto_deferente",
+"tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_ducto_deferente"
 "tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_com_estereocilios_e_tecido_epitelial_de_revestimento_cilindrico_simples_com_estereocilios_epididimo",
 "tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_traqueia",
 "tecido_epitelial_de_revestimento_cilindrico_simples_ciliado_e_tecido_epitelial_de_revestimento_cilindrico_pseudoestratificado_ciliado_tuba_uterina",
@@ -211,7 +216,8 @@ resultado.innerText=""
 posX=0
 posY=0
 escala=1
-img.style.transform=`scale(1) translate(0,0)`
+
+atualizarTransform()
 }
 
 function proxima(){
@@ -232,8 +238,8 @@ carregarImagem()
 }
 
 function zoom(valor){
-escala=valor
-img.style.transform=`scale(${escala}) translate(${posX}px, ${posY}px)`
+escala = valor
+atualizarTransform()
 }
 
 foco.addEventListener("input", ()=>{
@@ -277,10 +283,12 @@ sugestoesDiv.appendChild(div)
 })
 })
 
+// =====================
+// ARRASTAR (MOUSE)
+// =====================
 let arrastando=false
 let startX,startY
 
-// MOUSE
 img.addEventListener("mousedown",(e)=>{
 arrastando=true
 img.style.cursor="grabbing"
@@ -297,17 +305,23 @@ document.addEventListener("mousemove",(e)=>{
 if(arrastando){
 let dx=(e.clientX-startX)/escala
 let dy=(e.clientY-startY)/escala
+
 posX+=dx
 posY+=dy
+
 posX=Math.max(-300,Math.min(300,posX))
 posY=Math.max(-300,Math.min(300,posY))
-img.style.transform=`scale(${escala}) translate(${posX}px, ${posY}px)`
+
+atualizarTransform()
+
 startX=e.clientX
 startY=e.clientY
 }
 })
 
-// TOUCH (celular)
+// =====================
+// ARRASTAR (TOUCH)
+// =====================
 img.addEventListener("touchstart",(e)=>{
 arrastando=true
 let touch=e.touches[0]
@@ -321,17 +335,74 @@ arrastando=false
 
 document.addEventListener("touchmove",(e)=>{
 if(arrastando){
+
+if(e.touches.length > 1) return
+
 let touch=e.touches[0]
+
 let dx=(touch.clientX-startX)/escala
 let dy=(touch.clientY-startY)/escala
+
 posX+=dx
 posY+=dy
+
 posX=Math.max(-300,Math.min(300,posX))
 posY=Math.max(-300,Math.min(300,posY))
-img.style.transform=`scale(${escala}) translate(${posX}px, ${posY}px)`
+
+atualizarTransform()
+
 startX=touch.clientX
 startY=touch.clientY
 }
+})
+
+// =====================
+// ZOOM COM SCROLL
+// =====================
+document.addEventListener("wheel",(e)=>{
+e.preventDefault()
+
+let zoom = e.deltaY * -0.001
+escala += zoom
+
+escala = Math.min(Math.max(escala, 0.5), 4)
+
+atualizarTransform()
+},{ passive:false })
+
+// =====================
+// ZOOM COM PINÇA
+// =====================
+let distanciaInicial = null
+
+function getDistancia(touches){
+let dx = touches[0].clientX - touches[1].clientX
+let dy = touches[0].clientY - touches[1].clientY
+return Math.sqrt(dx*dx + dy*dy)
+}
+
+document.addEventListener("touchstart",(e)=>{
+if(e.touches.length===2){
+distanciaInicial = getDistancia(e.touches)
+}
+})
+
+document.addEventListener("touchmove",(e)=>{
+if(e.touches.length===2 && distanciaInicial){
+let novaDistancia = getDistancia(e.touches)
+let zoom = novaDistancia / distanciaInicial
+
+escala *= zoom
+escala = Math.min(Math.max(escala, 0.5), 4)
+
+atualizarTransform()
+
+distanciaInicial = novaDistancia
+}
+},{ passive:false })
+
+document.addEventListener("touchend",()=>{
+distanciaInicial=null
 })
 
 carregarImagem()
